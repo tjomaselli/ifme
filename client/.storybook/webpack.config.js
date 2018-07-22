@@ -1,12 +1,7 @@
 const path = require('path');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-
+const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
 const baseConfig = require('../webpack.config.base');
 
-const extractCSS = new ExtractTextPlugin({
-  filename: '[name]-[hash].css',
-  disable: true, // Set diable to true so that CSS works with hot reloading
-});
 const cssLoaderWithModules = {
   loader: 'css-loader',
   options: {
@@ -29,7 +24,10 @@ module.exports = Object.assign(baseConfig, {
   },
 
   plugins: [
-    extractCSS,
+    new MiniCSSExtractPlugin({
+      filename: '[name]-[hash].css',
+      disable: true, // Set diable to true so that CSS works with hot reloading
+    }),
   ],
 
   module: {
@@ -52,62 +50,51 @@ module.exports = Object.assign(baseConfig, {
       {
         test: /\.css$/,
         include: /node_modules/,
-        loader: extractCSS.extract({
+        use: [
+          MiniCSSExtractPlugin.loader,
           // Don't need singleton for hot reload, since we don't expect styles to change
-          fallback: 'style-loader',
-          use: [
-            {
-              loader: 'css-loader',
-              options: {
-                modules: false, // Prevent class renaming
-                camelCase: true,
-                localIdentName: '[name]__[local]___[hash:base64:5]',
-              },
+          {
+            loader: 'css-loader',
+            options: {
+              modules: false, // Prevent class renaming
+              camelCase: true,
+              localIdentName: '[name]__[local]___[hash:base64:5]',
             },
-          ],
-        }),
+          },
+        ]
       },
       {
         test: /\.css$/,
         exclude: /node_modules/,
-        loader: extractCSS.extract({
-          /**
-           * Use singleton to force reloading entire stylesheet whenever there is a
-           * change during hot reload.
-           */
-          fallback: 'style-loader?singleton',
-          use: [cssLoaderWithModules],
-        }),
+        use: [ 
+          MiniCSSExtractPlugin.loader,
+          cssLoaderWithModules,
+        ],
       },
       {
         test: /\.(sass|scss)$/,
         include: /node_modules/,
-        loader: extractCSS.extract({
-          fallback: 'style-loader',
-          use: [
-            {
-              loader: 'css-loader',
-              options: {
-                modules: false,
-                camelCase: true,
-                localIdentName: '[name]__[local]___[hash:base64:5]',
-              },
+        use: [
+          MiniCSSExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              modules: false,
+              camelCase: true,
+              localIdentName: '[name]__[local]___[hash:base64:5]',
             },
-            'sass-loader',
-          ],
-        }),
+          },
+          'sass-loader',
+        ]
       },
       {
         test: /\.(sass|scss)$/,
         exclude: /node_modules/,
-        loader: extractCSS.extract({
-          /**
-           * Use singleton to force reloading entire stylesheet whenever there is a
-           * change during hot reload.
-           */
-          fallback: 'style-loader?singleton',
-          use: [cssLoaderWithModules, 'sass-loader'],
-        }),
+        use: [
+          MiniCSSExtractPlugin.loader,
+          cssLoaderWithModules,
+          'sass-loader',
+        ]
       },
       {
         test: /\.ya?ml$/,

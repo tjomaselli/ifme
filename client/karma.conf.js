@@ -1,5 +1,5 @@
 // karma.conf.js
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
 const webpackConfig = require('./webpack.config');
 const webpack = require('webpack');
 
@@ -8,7 +8,7 @@ webpackConfig.plugins = [
     NODE_ENV: 'development', // use 'development' unless process.env.NODE_ENV is defined
     DEBUG: true,
   }),
-  new ExtractTextPlugin(`[name]-[hash].css`),
+  new MiniCSSExtractPlugin(`[name]-[hash].css`),
 ];
 webpackConfig.devtool = 'eval-source-map';
 
@@ -25,6 +25,7 @@ function getSpecs(specList) {
     return specList.split(',');
   } else {
     return [
+      'app/libs/setupTests.js',
       { pattern: 'app/**/*.spec.js', watched: true },
       { pattern: 'app/**/*.spec.jsx', watched: true },
     ];
@@ -39,6 +40,7 @@ module.exports = function (config) {
     files: getSpecs(process.env.KARMA_SPECS),
     preprocessors: {
       // make sure we run all the discovered files through webpack
+      'app/libs/setupTests.js': ['webpack', 'sourcemap'],
       'app/**/*.js': ['webpack', 'sourcemap'],
       'app/**/*.jsx': ['webpack', 'sourcemap'],
     },

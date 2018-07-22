@@ -7,15 +7,16 @@
 // https://github.com/shakacode/react_on_rails/tree/master/spec/dummy/client
 // https://github.com/shakacode/react-webpack-rails-tutorial/tree/master/client
 
+
 const webpack = require('webpack');
 const baseConfig = require('./webpack.config.base');
 const glob = require('glob');
 const { resolve } = require('path');
 
 const CompressionPlugin = require('compression-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
 const ManifestPlugin = require('webpack-manifest-plugin');
-// const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const webpackConfigLoader = require('react-on-rails/webpackConfigLoader');
 
 const configPath = resolve('..', 'config');
@@ -24,7 +25,6 @@ const { output } = webpackConfigLoader(configPath);
 const outputFilename = `[name]-[hash]${devBuild ? '' : '.min'}`;
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
-const extractCSS = new ExtractTextPlugin(`${outputFilename}.css`);
 const cssLoaderWithModules = {
   loader: 'css-loader',
   options: {
@@ -63,7 +63,7 @@ const config = Object.assign(baseConfig, {
       NODE_ENV: 'development', // use 'development' unless process.env.NODE_ENV is defined
       DEBUG: false,
     }),
-    extractCSS,
+    new MiniCSSExtractPlugin(`${outputFilename}.css`),
     new ManifestPlugin({ publicPath: output.publicPath, writeToFileEmit: true }),
   ].concat(devBuild ? [] : [
     new UglifyJsPlugin({
@@ -80,13 +80,13 @@ const config = Object.assign(baseConfig, {
      *
      * Re-enable this plugin once the issue has been resolved.
      */
-    // new OptimizeCssAssetsPlugin({
-    //   cssProcessorOptions: {
-    //     discardComments: {
-    //       removeAll: true,
-    //     },
-    //   },
-    // }),
+    new OptimizeCssAssetsPlugin({
+      cssProcessorOptions: {
+        discardComments: {
+          removeAll: true,
+        },
+      },
+    }),
     new CompressionPlugin({
       asset: '[path].gz[query]',
       algorithm: 'gzip',
@@ -116,53 +116,50 @@ const config = Object.assign(baseConfig, {
       {
         test: /\.css$/,
         include: /node_modules/,
-        loader: extractCSS.extract({
-          fallback: 'style-loader',
-          use: [
-            {
-              loader: 'css-loader',
-              options: {
-                modules: false,
-                camelCase: true,
-                localIdentName: '[name]__[local]___[hash:base64:5]',
-              },
+        use: [
+          MiniCSSExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              modules: false,
+              camelCase: true,
+              localIdentName: '[name]__[local]___[hash:base64:5]',
             },
-          ],
-        }),
+          },
+        ],
       },
       {
         test: /\.css$/,
         exclude: /node_modules/,
-        loader: extractCSS.extract({
-          fallback: 'style-loader',
-          use: [cssLoaderWithModules],
-        }),
+        use: [
+          MiniCSSExtractPlugin.loader,
+          cssLoaderWithModules,
+        ],
       },
       {
         test: /\.(sass|scss)$/,
         include: /node_modules/,
-        loader: extractCSS.extract({
-          fallback: 'style-loader',
-          use: [
-            {
-              loader: 'css-loader',
-              options: {
-                modules: false,
-                camelCase: true,
-                localIdentName: '[name]__[local]___[hash:base64:5]',
-              },
+        use: [
+          MiniCSSExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              modules: false,
+              camelCase: true,
+              localIdentName: '[name]__[local]___[hash:base64:5]',
             },
-            'sass-loader',
-          ],
-        }),
+          },
+          'sass-loader',
+        ],
       },
       {
         test: /\.(sass|scss)$/,
         exclude: /node_modules/,
-        loader: extractCSS.extract({
-          fallback: 'style-loader',
-          use: [cssLoaderWithModules, 'sass-loader'],
-        }),
+        use: [
+          MiniCSSExtractPlugin.loader,
+          cssLoaderWithModules,
+          'sass-loader',
+        ],
       },
       {
         test: /\.ya?ml$/,
