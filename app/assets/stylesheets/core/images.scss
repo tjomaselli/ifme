@@ -1,0 +1,21 @@
+@mixin homeImages($url) {
+  background: url($url);
+  height: 180px;
+  width: auto;
+  background-size: auto 180px;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-bottom: $size-40;
+}
+
+#phone {
+  @include homeImages('/assets/phone.svg');
+}
+
+#lotus {
+  @include homeImages('/assets/lotus.svg');
+}
+
+#documents {
+  @include homeImages('/assets/documents.svg');
+}

@@ -78,26 +78,3 @@
     }
   }
 }
-
-.onboarding {
-  @media screen and (max-width: $medium) {
-    .message_cell {
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-
-    .onboarding_message {
-      text-align: center;
-    }
-
-    .padding_bottom {
-      padding-bottom: $size-20 !important;
-    }
-  }
-
-  @media screen and (min-width: $medium + 1) {
-    .padding_bottom {
-      padding-bottom: 0 !important;
-    }
-  }
-}
